@@ -4,63 +4,132 @@
 #include <fstream>
 #include <ios>
 #include <iostream>
-#include <string>
-#include <map>
 #include <list>
+#include <map>
+#include <string>
 
+void outputStrInHex(string str) {
 
-void outputStrInHex(string str){
-    
-    for( unsigned char c : str){
-        printf("%X|%3d (%c)\n",c,c,c);
-    }
-    printf("\n");
+  for (unsigned char c : str) {
+    printf("%X|%3d (%c)\n", c, c, c);
+  }
+  printf("\n");
 }
 
-unsigned char* readBinaryData(std::string filename){
-    unsigned char* bvar;
-    std::basic_ifstream<unsigned char> inF (filename, std::ios::in|std::ios::binary|std::ios::ate);
-    if (inF.is_open()){
-        int size = inF.tellg();
-        bvar = new unsigned char[size];
-        inF.seekg(0,std::ios::beg);
-        inF.read(bvar, size);
-        inF.close();
-        return bvar;
-    } else {
-        std::cerr << "Could not open binary file '" << filename << "'\n";
-        return nullptr;
-    }
+unsigned char *readBinaryData(std::string filename) {
+  char *bvar;
+  std::basic_ifstream<char> inF(filename, std::ios::in | std::ios::binary |
+                                              std::ios::ate);
+  if (inF.is_open()) {
+    int size = inF.tellg();
+    bvar = new char[size];
+    inF.seekg(0, std::ios::beg);
+    inF.read(bvar, size);
+    inF.close();
+    return reinterpret_cast<unsigned char *>(bvar);
+  } else {
+    std::cerr << "Could not open binary file '" << filename << "'\n";
+    return nullptr;
+  }
 }
 
-int main(){
-    string ostr;
-    boost::any outObjStrBin;
-    unsigned char* strbindata = readBinaryData("encode-str.bin");
-    if (strbindata != nullptr){
-        string strBin (strbindata);
-        decode(strBin, outObjStrBin);
-        std::cout << "Decoded: " << boost::any_cast<std::string>(outObjStrBin) << "\n";
-    } else {
-        return 1;
+int main() {
+  string ostr;
+  boost::any outObjStrBin;
+
+  std::cout << "Reading and decoding string..."
+            << "\n";
+  unsigned char *strbindata = readBinaryData("encode-str.bin");
+  // std::cout << "Read: " << reinterpret_cast<const char*>(strbindata)  <<
+  // "\n";
+  if (strbindata != nullptr) {
+    string strBin(strbindata);
+    decode(strBin, outObjStrBin);
+    std::cout << "Decoding done, printing...\n";
+    std::string sout = boost::any_cast<std::string>(outObjStrBin);
+    std::cout << "Decoded: " << sout << "\n";
+  } else {
+    return 1;
+  }
+
+  outObjStrBin.empty();
+  std::cout << "Reading and decoding map/dictionary..."
+            << "\n";
+  strbindata = readBinaryData("encode-map.bin");
+  if (strbindata != nullptr) {
+    string strBin(strbindata);
+    decode(strBin, outObjStrBin);
+    std::cout << "Decoding done, printing...\n";
+    std::map<std::string, boost::any> sout =
+        boost::any_cast<std::map<std::string, boost::any>>(outObjStrBin);
+    std::cout << "Decoded: " << sout.size() << " items in dictionary; \n";
+    std::cout << "Checking for key 'hello'...\n";
+    auto it = sout.find("hello");
+    if (it != sout.end())
+      std::cout << "Key: " << it->first
+                << "; Value: " << boost::any_cast<std::string>(it->second)
+                << "\n";
+
+    std::cout << "Checking for invalid key 'inv'...\n";
+    auto it2 = sout.find("inv");
+    if (it2 != sout.end())
+      std::cout << "Key: " << it2->first
+                << "; Value: " << boost::any_cast<std::string>(it2->second)
+                << "\n";
+    else
+      std::cout << "Check OK!"
+                << "\n";
+  } else {
+    return 2;
+  }
+
+  outObjStrBin.empty();
+  std::cout << "Reading and decoding list..."
+            << "\n";
+  strbindata = readBinaryData("encode-list.bin");
+  if (strbindata != nullptr) {
+    try {
+      string strBin(strbindata);
+      decode(strBin, outObjStrBin);
+      std::cout << "Decoding done, printing...\n";
+      std::list<boost::any> b =
+          boost::any_cast<std::list<boost::any>>(outObjStrBin);
+      std::cout << "Decoded: " << b.size() << " items in list.\n";
+      std::cout << "First object should be a string..."
+                << "\n";
+      std::string s = boost::any_cast<std::string>(b.front());
+      std::cout << "Decoded as: " << s << "\n";
+
+      b.pop_front();
+      std::cout << "popped queue, new 'first' element should be a dict."
+                << "\n";
+      std::map<std::string, boost::any> sout =
+          boost::any_cast<std::map<std::string, boost::any>>(b.front());
+      std::cout << "Decoded. Items: " << sout.size() << " items\n";
+      auto it = sout.find("hello");
+      if (it != sout.end())
+        std::cout << "Key: " << it->first
+                  << "; Value: " << boost::any_cast<std::string>(it->second)
+                  << "\n";
+
+      std::cout << "Checking for invalid key 'inv'...\n";
+      auto it2 = sout.find("inv");
+      if (it2 != sout.end())
+        std::cout << "Key: " << it2->first
+                  << "; Value: " << boost::any_cast<std::string>(it2->second)
+                  << "\n";
+      else
+        std::cout << "Check OK!"
+                  << "\n";
+
+    } catch (boost::bad_any_cast w) {
+      // std::cout << "Error casting. a_s (any) is really: " <<
+      // boost::typeindex::type_index(a_s.type()).pretty_name() << "\n";
+      std::cout << "casting error: " << w.what() << "\n";
     }
+  } else {
+    return 3;
+  }
 
-    /*
-    std::string str = "hello";
-    std::cout << "Outputting str.. "  << '\n';
-    encode(str,ostr);
-
-    std::map<std::string, boost::any> s = {{"hello","hi"}};
-    std::cout << "Outputting map.. "  << '\n';
-    //encode(ostr, 0, sp);
-    encode(s,ostr);
-
-    std::cout << "Outputting list.. "  << '\n';
-    std::list<boost::any> l = {};
-    
-    l.push_back("hello");
-    l.push_back(s);
-    encode(l,ostr);
-    outputStrInHex(ostr);
-    return 0;*/
-}        
+  return 0;
+}

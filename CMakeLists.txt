@@ -5,6 +5,8 @@ project(rencodeplus)
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
+
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
