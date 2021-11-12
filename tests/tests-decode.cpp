@@ -16,12 +16,12 @@ void outputStrInHex(string str) {
   printf("\n");
 }
 
-unsigned char *readBinaryData(std::string filename) {
+unsigned char *readBinaryData(std::string filename, int &size) {
   char *bvar;
   std::basic_ifstream<char> inF(filename, std::ios::in | std::ios::binary |
                                               std::ios::ate);
   if (inF.is_open()) {
-    int size = inF.tellg();
+    size = inF.tellg();
     bvar = new char[size];
     inF.seekg(0, std::ios::beg);
     inF.read(bvar, size);
@@ -39,9 +39,8 @@ int main() {
 
   std::cout << "Reading and decoding string..."
             << "\n";
-  unsigned char *strbindata = readBinaryData("encode-str.bin");
-  // std::cout << "Read: " << reinterpret_cast<const char*>(strbindata)  <<
-  // "\n";
+  int readSize;
+  unsigned char *strbindata = readBinaryData("encode-str.bin", readSize);
   if (strbindata != nullptr) {
     string strBin(strbindata);
     decode(strBin, outObjStrBin);
@@ -55,7 +54,7 @@ int main() {
   outObjStrBin.empty();
   std::cout << "Reading and decoding map/dictionary..."
             << "\n";
-  strbindata = readBinaryData("encode-map.bin");
+  strbindata = readBinaryData("encode-map.bin", readSize);
   if (strbindata != nullptr) {
     string strBin(strbindata);
     decode(strBin, outObjStrBin);
@@ -86,7 +85,7 @@ int main() {
   outObjStrBin.empty();
   std::cout << "Reading and decoding list..."
             << "\n";
-  strbindata = readBinaryData("encode-list.bin");
+  strbindata = readBinaryData("encode-list.bin", readSize);
   if (strbindata != nullptr) {
     try {
       string strBin(strbindata);
@@ -130,6 +129,33 @@ int main() {
   } else {
     return 3;
   }
+
+/*
+ outObjStrBin.empty();
+  std::cout << "Reading and decoding real xpra data..."
+            << "\n";
+  strbindata = readBinaryData("xpra-example-hello.bin", readSize);
+  if (strbindata != nullptr) {
+    try {
+      string strBin(strbindata, readSize);
+      decode(strBin, outObjStrBin);
+      std::cout << "Decoding done, printing...\n";
+      std::list<boost::any> b =
+          boost::any_cast<std::list<boost::any>>(outObjStrBin);
+      std::cout << "Decoded: " << b.size() << " items in list.\n";
+    
+    std::cout << "Check OK!"
+                << "\n";
+
+    } catch (boost::bad_any_cast w) {
+      // std::cout << "Error casting. a_s (any) is really: " <<
+      // boost::typeindex::type_index(a_s.type()).pretty_name() << "\n";
+      std::cout << "casting error: " << w.what() << "\n";
+    }
+  } else {
+    return 3;
+  }
+*/
 
   return 0;
 }

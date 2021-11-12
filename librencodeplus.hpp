@@ -18,9 +18,9 @@ bool encode_try_all(boost::any data, string &encodedStr);
 
 void encode(boost::any data, string &encodedStr);
 
-void decode(string &inputStr, boost::any &outObject);
-void decode_list(string &inputStr, boost::any &outObject);
-void decode_fixed_list(string &inputStr, boost::any &outObject);
-void decode_string(string &inputStr, boost::any &outObject);
-void decode_fixed_string(string &inputStr, boost::any &outObject);
+bool decode(string &inputStr, boost::any &outObject);
+bool decode_list(string &inputStr, boost::any &outObject);
+bool decode_fixed_list(string &inputStr, boost::any &outObject);
+bool decode_string(string &inputStr, boost::any &outObject);
+bool decode_fixed_string(string &inputStr, boost::any &outObject);
 #endif
