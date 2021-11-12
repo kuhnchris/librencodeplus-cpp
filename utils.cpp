@@ -7,6 +7,17 @@
 #include <memory>
 #include <string>
 #include <cstdlib>
+#include <boost/any.hpp>
+
+template <typename T> bool is_any_a(boost::any a) {
+  try {
+    T i = boost::any_cast<T>(a);
+  } catch (boost::bad_any_cast e) {
+    // std::cout << "error, no " << type_name<T>() << "\n";
+    return false;
+  }
+  return true;
+}
 
 template <typename T>
 std::string

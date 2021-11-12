@@ -9,21 +9,6 @@
 #include <string>
 #include <typeinfo>
 
-
-template <typename T> bool encode_any(boost::any data, string &encodedStr);
-
-
-template <typename T> bool is_any_a(boost::any a) {
-  try {
-    T i = boost::any_cast<T>(a);
-  } catch (boost::bad_any_cast e) {
-    // std::cout << "error, no " << type_name<T>() << "\n";
-    return false;
-  }
-  return true;
-}
-
-
 void encode_specific(string data, string &encodedStr) {
   if (data.length() <= STR_FIXED_COUNT) {
     unsigned char c = STR_FIXED_START + data.length();
