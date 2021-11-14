@@ -1,4 +1,5 @@
 #include "../librencodeplus.hpp"
+#include "../utils.hpp"
 #include <boost/any.hpp>
 #include <cstddef>
 #include <fstream>
@@ -46,7 +47,9 @@ int main() {
     decode(strBin, outObjStrBin);
     std::cout << "Decoding done, printing...\n";
     std::string sout = boost::any_cast<std::string>(outObjStrBin);
-    std::cout << "Decoded: " << sout << "\n";
+    std::cout << "Decoded: "
+              << "\n";
+    outputDataStructure(outObjStrBin, 0);
   } else {
     return 1;
   }
@@ -62,6 +65,7 @@ int main() {
     std::map<std::string, boost::any> sout =
         boost::any_cast<std::map<std::string, boost::any>>(outObjStrBin);
     std::cout << "Decoded: " << sout.size() << " items in dictionary; \n";
+    outputDataStructure(outObjStrBin, 0);
     std::cout << "Checking for key 'hello'...\n";
     auto it = sout.find("hello");
     if (it != sout.end())
@@ -94,6 +98,7 @@ int main() {
       std::list<boost::any> b =
           boost::any_cast<std::list<boost::any>>(outObjStrBin);
       std::cout << "Decoded: " << b.size() << " items in list.\n";
+      outputDataStructure(outObjStrBin, 0);
       std::cout << "First object should be a string..."
                 << "\n";
       std::string s = boost::any_cast<std::string>(b.front());
@@ -130,8 +135,7 @@ int main() {
     return 3;
   }
 
-/*
- outObjStrBin.empty();
+  outObjStrBin.empty();
   std::cout << "Reading and decoding real xpra data..."
             << "\n";
   strbindata = readBinaryData("xpra-example-hello.bin", readSize);
@@ -143,8 +147,8 @@ int main() {
       std::list<boost::any> b =
           boost::any_cast<std::list<boost::any>>(outObjStrBin);
       std::cout << "Decoded: " << b.size() << " items in list.\n";
-    
-    std::cout << "Check OK!"
+      outputDataStructure(outObjStrBin, 0);
+      std::cout << "Check OK!"
                 << "\n";
 
     } catch (boost::bad_any_cast w) {
@@ -155,7 +159,6 @@ int main() {
   } else {
     return 3;
   }
-*/
 
   return 0;
 }
