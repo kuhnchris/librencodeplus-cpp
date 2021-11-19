@@ -9,39 +9,13 @@
 #include <map>
 #include <string>
 
-void outputStrInHex(string str) {
-
-  for (unsigned char c : str) {
-    printf("%X|%3d (%c)\n", c, c, c);
-  }
-  printf("\n");
-}
-
-unsigned char *readBinaryData(std::string filename, int &size) {
-  char *bvar;
-  std::basic_ifstream<char> inF(filename, std::ios::in | std::ios::binary |
-                                              std::ios::ate);
-  if (inF.is_open()) {
-    size = inF.tellg();
-    bvar = new char[size];
-    inF.seekg(0, std::ios::beg);
-    inF.read(bvar, size);
-    inF.close();
-    return reinterpret_cast<unsigned char *>(bvar);
-  } else {
-    std::cerr << "Could not open binary file '" << filename << "'\n";
-    return nullptr;
-  }
-}
-
-int main() {
+int test_str() {
   string ostr;
   boost::any outObjStrBin;
-
-  std::cout << "Reading and decoding string..."
-            << "\n";
   int readSize;
   unsigned char *strbindata = readBinaryData("encode-str.bin", readSize);
+  std::cout << "Reading and decoding string..."
+            << "\n";
   if (strbindata != nullptr) {
     string strBin(strbindata);
     decode(strBin, outObjStrBin);
@@ -53,11 +27,18 @@ int main() {
   } else {
     return 1;
   }
+  return 0;
+}
 
-  outObjStrBin.empty();
+int test_map() {
   std::cout << "Reading and decoding map/dictionary..."
             << "\n";
-  strbindata = readBinaryData("encode-map.bin", readSize);
+
+  string ostr;
+  boost::any outObjStrBin;
+  int readSize;
+  unsigned char *strbindata = strbindata =
+      readBinaryData("encode-map.bin", readSize);
   if (strbindata != nullptr) {
     string strBin(strbindata);
     decode(strBin, outObjStrBin);
@@ -85,11 +66,16 @@ int main() {
   } else {
     return 2;
   }
+  return 0;
+}
 
-  outObjStrBin.empty();
+int test_list() {
   std::cout << "Reading and decoding list..."
             << "\n";
-  strbindata = readBinaryData("encode-list.bin", readSize);
+  string ostr;
+  boost::any outObjStrBin;
+  int readSize;
+  unsigned char *strbindata = readBinaryData("encode-list.bin", readSize);
   if (strbindata != nullptr) {
     try {
       string strBin(strbindata);
@@ -134,11 +120,17 @@ int main() {
   } else {
     return 3;
   }
+  return 0;
+}
 
-  outObjStrBin.empty();
+int test_xpra() {
   std::cout << "Reading and decoding real xpra data..."
             << "\n";
-  strbindata = readBinaryData("xpra-example-hello.bin", readSize);
+  string ostr;
+  boost::any outObjStrBin;
+  int readSize;
+  unsigned char *strbindata =
+      readBinaryData("xpra-example-hello.bin", readSize);
   if (strbindata != nullptr) {
     try {
       string strBin(strbindata, readSize);
@@ -161,4 +153,11 @@ int main() {
   }
 
   return 0;
+}
+
+int main() {
+  int res_1 = test_str();
+  int res_2 = test_map();
+  int res_3 = test_list();
+  int res_4 = test_xpra();
 }

@@ -2,6 +2,7 @@
 #define RENCODEPLUSCONSTS
 // Default number of bits for serialized floats, either 32 or 64 (also a
 // parameter for dumps()).
+#include <climits>
 const unsigned char DEFAULT_FLOAT_BITS = 32;
 // Maximum length of integer when written as base 10 string.
 const unsigned char MAX_INT_LENGTH = 64;
@@ -36,11 +37,11 @@ const unsigned char STR_FIXED_COUNT = 64;
 const unsigned char LIST_FIXED_START = STR_FIXED_START + STR_FIXED_COUNT;
 const unsigned char LIST_FIXED_COUNT = 64;
 
-const int MAX_SIGNED_INT = (1 << 31);
-const int MIN_SIGNED_INT = -MAX_SIGNED_INT;
+const int MAX_SIGNED_INT = INT_MAX;
+const int MIN_SIGNED_INT = -INT_MAX;
 // note: negating the Python value avoids compiler problems
 //(negating the "long long" constant can make it unsigned with some compilers!)
-const long long MAX_SIGNED_LONGLONG = ((long long)1 << 63);
-const long long MIN_SIGNED_LONGLONG = -MAX_SIGNED_LONGLONG;
+const long long MAX_SIGNED_LONGLONG = LONG_LONG_MAX;
+const long long MIN_SIGNED_LONGLONG = -LONG_LONG_MAX;
 
 #endif

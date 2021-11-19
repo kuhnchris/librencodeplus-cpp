@@ -12,6 +12,9 @@ void encode_specific(string data, string &encodedStr) ;
 void encode_specific(std::string data, string &encodedStr) ;
 void encode_specific(std::map<std::string, boost::any> data, string &encodedStr) ;
 void encode_specific(std::list<boost::any> data, string &encodedStr) ;
+void encode_specific(bool data, string &encodedStr) ;
+void encode_specific(int data, string &encodedStr) ;
+
 
 template<typename T> bool encode_any(boost::any data, string& encodedStr);
 bool encode_try_all(boost::any data, string &encodedStr);

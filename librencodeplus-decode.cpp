@@ -22,10 +22,32 @@ bool decode_fixed_int(string &inputStr, boost::any &outObject) {
     std::cout << "Extracted: " << f << "\n";
 #endif
     outObject = f;
-    inputStr = inputStr.substr(1);
+    inputStr = string(&inputStr[1], inputStr.size() - 1);
   } catch (boost::bad_any_cast c) {
-    std::cout << "Extracting string from rencode failed."
+    std::cout << "Extracting fixed int from rencode failed."
               << "\n";
+    outObject = -1;
+    return false;
+  }
+  return true;
+}
+bool decode_fixed_neg_int(string &inputStr, boost::any &outObject) {
+  try {
+    int len = inputStr[0] - INT_NEG_FIXED_START * -1;
+#ifdef DEBUG
+    std::cout << "Extracting fixed neg int..."
+              << "\n";
+#endif
+    int f = len;
+#ifdef DEBUG
+    std::cout << "Extracted: " << f << "\n";
+#endif
+    outObject = f;
+    inputStr = string(&inputStr[1], inputStr.size() - 1);
+  } catch (boost::bad_any_cast c) {
+    std::cout << "Extracting fixed neg int from rencode failed."
+              << "\n";
+    outObject = -1;
     return false;
   }
   return true;
@@ -44,7 +66,7 @@ bool decode_int_1(string &inputStr, boost::any &outObject) {
     outObject = f;
     inputStr = inputStr.substr(2);
   } catch (boost::bad_any_cast c) {
-    std::cout << "Extracting string from rencode failed."
+    std::cout << "Extracting int1 from rencode failed."
               << "\n";
     return false;
   }
@@ -64,7 +86,7 @@ bool decode_int_2(string &inputStr, boost::any &outObject) {
     outObject = f;
     inputStr = inputStr.substr(3);
   } catch (boost::bad_any_cast c) {
-    std::cout << "Extracting string from rencode failed."
+    std::cout << "Extracting int2 from rencode failed."
               << "\n";
     return false;
   }
@@ -85,7 +107,7 @@ bool decode_int_4(string &inputStr, boost::any &outObject) {
     outObject = f;
     inputStr = inputStr.substr(5);
   } catch (boost::bad_any_cast c) {
-    std::cout << "Extracting string from rencode failed."
+    std::cout << "Extracting int4 from rencode failed."
               << "\n";
     return false;
   }
@@ -107,8 +129,9 @@ bool decode_fixed_string(string &inputStr, boost::any &outObject) {
     outObject = f;
     inputStr = inputStr.substr(len + 1);
   } catch (boost::bad_any_cast c) {
-    std::cout << "Extracting string from rencode failed."
+    std::cout << "Extracting fixed string from rencode failed."
               << "\n";
+    outObject = "";
     return false;
   }
   return true;
@@ -123,8 +146,11 @@ bool decode_fixed_list(string &inputStr, boost::any &outObject) {
   std::list<boost::any> l = std::list<boost::any>();
 
   for (int i = 0; i < listLen; i++) {
-    if (!decode(inputStr, innerObj))
+    if (!decode(inputStr, innerObj)) {
+      outObject = l;
       return false;
+    }
+
     l.push_back(innerObj);
     innerObj = nullptr;
   }
@@ -143,12 +169,84 @@ bool decode_dict(string &inputStr, boost::any &outObject) {
       std::cout << "Reading key-value pair for dict..."
                 << "\n";
 #endif
-      if (!decode(inputStr, innerObjK))
+      if (!decode(inputStr, innerObjK)) {
+        outObject = l;
         return false;
-      if (!decode(inputStr, innerObjV))
+      }
+      if (!decode(inputStr, innerObjV)) {
+
+        outObject = l;
         return false;
+      }
 #ifdef DEBUG
       std::cout << "Adding to dictionary..."
+                << "\n";
+#endif
+      std::string kStr;
+      try {
+        kStr = boost::any_cast<std::string>(innerObjK);
+      } catch (boost::bad_any_cast e) {
+
+        std::cerr
+            << "Could not convert key. Expected: std::string/char*, got: "
+            << boost::typeindex::type_index(innerObjK.type()).pretty_name()
+            << "\n"
+            << "Error: " << e.what() << "\n";
+        outObject = l;
+        return false;
+      }
+      try {
+        l.insert(std::pair<std::string, boost::any>(kStr, innerObjV));
+      } catch (boost::bad_any_cast e) {
+
+        std::cerr
+            << "Could not convert value. Expected: boost::any, got: "
+            << boost::typeindex::type_index(innerObjK.type()).pretty_name()
+            << "\n"
+            << "Error: " << e.what() << "\n";
+        outObject = l;
+        return false;
+      }
+      innerObjK = nullptr;
+      innerObjV = nullptr;
+    } catch (boost::bad_any_cast e) {
+
+      std::cerr << "Additional Dictionary error. "
+                << "\n"
+                << "Error: " << e.what() << "\n";
+      outObject = l;
+      return false;
+    }
+  }
+  if (inputStr.size() > 0)
+    inputStr = inputStr.substr(1);
+  outObject = l;
+  return true;
+}
+
+bool decode_fixed_dict(string &inputStr, boost::any &outObject) {
+  int cnt = inputStr[0] - DICT_FIXED_START;
+  inputStr = inputStr.substr(1);
+
+  boost::any innerObjK;
+  boost::any innerObjV;
+  std::map<std::string, boost::any> l = std::map<std::string, boost::any>();
+  for (int i = 0; i < cnt; i++) {
+    try {
+#ifdef DEBUG
+      std::cout << "Reading key-value pair for fixed dict..."
+                << "\n";
+#endif
+      if (!decode(inputStr, innerObjK)) {
+        outObject = l;
+        return false;
+      }
+      if (!decode(inputStr, innerObjV)) {
+        outObject = l;
+        return false;
+      }
+#ifdef DEBUG
+      std::cout << "Adding to fixed dictionary..."
                 << "\n";
 #endif
       std::string kStr = boost::any_cast<std::string>(innerObjK);
@@ -161,7 +259,7 @@ bool decode_dict(string &inputStr, boost::any &outObject) {
                 << boost::typeindex::type_index(innerObjK.type()).pretty_name()
                 << "\n"
                 << "Error: " << e.what() << "\n";
-
+      outObject = l;
       return false;
     }
   }
@@ -174,8 +272,10 @@ bool decode_list(string &inputStr, boost::any &outObject) {
   boost::any innerObj;
   std::list<boost::any> l = std::list<boost::any>();
   while (inputStr[0] != CHR_TERM) {
-    if (!decode(inputStr, innerObj))
+    if (!decode(inputStr, innerObj)){
+      outObject = l;
       return false;
+    }
     l.push_back(innerObj);
     innerObj = nullptr;
   }
@@ -184,6 +284,9 @@ bool decode_list(string &inputStr, boost::any &outObject) {
 }
 
 bool decode(string &inputStr, boost::any &outObject) {
+#ifdef DEBUG
+  std::cout << "inputStr still has a size() of: " << inputStr.size() << "\n";
+#endif
   switch (inputStr[0]) {
   case CHR_TRUE:
 #ifdef DEBUG
@@ -242,6 +345,18 @@ bool decode(string &inputStr, boost::any &outObject) {
       return false;
     return true;
   default:
+
+    if (DICT_FIXED_START <= inputStr[0] &&
+        inputStr[0] <= (DICT_FIXED_START + DICT_FIXED_COUNT)) {
+#ifdef DEBUG
+      std::cout << "found a fixed +int"
+                << "\n";
+#endif
+      if (!decode_fixed_dict(inputStr, outObject))
+        return false;
+      return true;
+    }
+
     if (INT_POS_FIXED_START <= inputStr[0] &&
         inputStr[0] <= (INT_POS_FIXED_START + INT_POS_FIXED_COUNT)) {
 #ifdef DEBUG
@@ -252,8 +367,19 @@ bool decode(string &inputStr, boost::any &outObject) {
         return false;
       return true;
     }
+    if (INT_NEG_FIXED_START <= inputStr[0] &&
+        inputStr[0] <= (INT_NEG_FIXED_START + INT_NEG_FIXED_COUNT)) {
+#ifdef DEBUG
+      std::cout << "found a fixed -int"
+                << "\n";
+#endif
+      if (!decode_fixed_neg_int(inputStr, outObject))
+        return false;
+      return true;
+    }
+
     if (STR_FIXED_START <= inputStr[0] &&
-        inputStr[0] <= (STR_FIXED_START + STR_FIXED_COUNT)) {
+        inputStr[0] < (STR_FIXED_START + STR_FIXED_COUNT)) {
 #ifdef DEBUG
       std::cout << "found a fixed string"
                 << "\n";

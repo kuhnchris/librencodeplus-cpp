@@ -9,16 +9,8 @@
 #include <string>
 #include <cstdlib>
 #include <boost/any.hpp>
-
-template <typename T> bool is_any_a(boost::any a) {
-  try {
-    T i = boost::any_cast<T>(a);
-  } catch (boost::bad_any_cast e) {
-    // std::cout << "error, no " << type_name<T>() << "\n";
-    return false;
-  }
-  return true;
-}
+#include <iostream>
+#include "librencodeplus.hpp"
 
 
 template <typename T>
@@ -49,6 +41,22 @@ type_name()
 
 }
 
+template <typename T> bool is_any_a(boost::any a) {
+  try {
+    T i = boost::any_cast<T>(a);
+  } catch (boost::bad_any_cast e) {
+    #ifdef DEBUG_IS_ANY_A
+    std::cout << "error, no " << type_name<T>() << "\n";
+    #endif
+    return false;
+  }
+  return true;
+}
+
 void outputDataStructure(boost::any any, int level, bool prefix = true);
+
+int writeToFile(std::string fileName, string content);
+void outputStrInHex(string str);
+unsigned char *readBinaryData(std::string filename, int &size);
 
 #endif

@@ -1,33 +1,11 @@
 #include "../librencodeplus.hpp"
+#include "../utils.hpp"
 #include <boost/any.hpp>
-#include <fstream>
-#include <iostream>
 #include <string>
 #include <map>
 #include <list>
 
 
-void outputStrInHex(string str){
-    
-    for( unsigned char c : str){
-        printf("%X|%3d (%c)\n",c,c,c);
-    }
-    printf("\n");
-}
-
-int writeToFile(std::string fileName, string content){
-    std::ofstream fout (fileName, std::ios::out|std::ios::trunc|std::ios::binary);
-    if (fout.is_open()){
-        std::cout << "exporting " << content.size() << " bytes...\n";
-        fout.write(reinterpret_cast<const char*>(content.c_str()),content.size());
-        fout.flush();
-        fout.close();
-        return 0;
-    }else{
-        std::cerr << "Could not open file '" << fileName << "' for writing.";
-        return 1;
-    } 
-}
 
 int main(int argc, char** argv){
     bool outAsFiles = false;

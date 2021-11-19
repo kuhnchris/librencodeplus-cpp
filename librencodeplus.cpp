@@ -10,40 +10,90 @@
 #include <typeinfo>
 
 void encode_specific(string data, string &encodedStr) {
-  if (data.length() <= STR_FIXED_COUNT) {
+
+#ifdef DEBUG
+  std::cout << encodedStr.size() <<  " - " << ">>Encoding string...\n";
+#endif
+  if (data.length() < STR_FIXED_COUNT) {
     unsigned char c = STR_FIXED_START + data.length();
     encodedStr = encodedStr + c + data;
   } else {
     unsigned char c = data.length();
     encodedStr = encodedStr + c + (unsigned char)':' + data;
   }
-  //std::cout << "Encoding string...: " << encodedStr << "\n";
+#ifdef DEBUG
+  std::cout << encodedStr.size() <<  " - " << "<<Encoded string...\n";
+#endif
+}
+
+void encode_specific(int data, string &encodedStr) {
+
+#ifdef DEBUG
+  std::cout << encodedStr.size() <<  " - " << ">>Encoding int...\n";
+#endif
+  if (data < INT_POS_FIXED_COUNT) {
+    encodedStr =
+        encodedStr + static_cast<unsigned char>(INT_POS_FIXED_START + data);
+  } else {
+    //unsigned char c = data.length();
+    encodedStr = encodedStr + static_cast<unsigned char>(CHR_INT1) + static_cast<unsigned char>(data);
+  }
+#ifdef DEBUG
+  std::cout << encodedStr.size() <<  " - " << "<<Encoded int...\n";
+#endif
+}
+
+void encode_specific(bool data, string &encodedStr) {
+#ifdef DEBUG
+  std::cout << encodedStr.size() <<  " - " << ">>Encoding bool...\n";
+#endif
+  if (data) {
+    encodedStr = encodedStr + static_cast<unsigned char>(CHR_TRUE);
+  } else {
+    encodedStr = encodedStr + static_cast<unsigned char>(CHR_FALSE);
+  }
+#ifdef DEBUG
+  std::cout << encodedStr.size() <<  " - " << "<<Encoded bool...\n";
+#endif
 }
 
 void encode_specific(std::string data, string &encodedStr) {
+
+#ifdef DEBUG
+  std::cout << encodedStr.size() <<  " - " << ">>Encoding string (std)...\n";
+#endif
   string d;
-  for (char c : data){
+  for (char c : data) {
     d = d + static_cast<unsigned char>(c);
   }
-  if (data.length() <= STR_FIXED_COUNT) {
+  if (data.length() < STR_FIXED_COUNT) {
     unsigned char c = STR_FIXED_START + data.length();
     encodedStr = encodedStr + c + d;
   } else {
     unsigned char c = data.length();
     encodedStr = encodedStr + c + (unsigned char)':' + d;
   }
-  //std::cout << "Encoding string...: " << encodedStr << "\n";
+#ifdef DEBUG
+  std::cout << encodedStr.size() <<  " - " << "<<Encoded string (std)... "<< data <<"\n";
+#endif
 }
 
 void encode_specific(std::map<std::string, boost::any> data,
                      string &encodedStr) {
-  //std::cout << "encoding map...\n";
+#ifdef DEBUG
+  std::cout << encodedStr.size() <<  " - " << ">>encoding map...\n";
+#endif
   string strAdd;
-  for (const auto &p : data) {
-    //std::cout << "attempting to convert key..." << type_name<typeof(p.first)>()
-      //        << "\n";
+  for (auto &p : data) {
+#ifdef DEBUG
+    std::cout << strAdd.size() <<  " - " << "attempting to convert key..." << type_name<typeof(p.first)>()
+              << "\n";
+#endif
     encode_try_all(p.first, strAdd);
-    //std::cout << "attempting to convert value..." << type_name<typeof(p.second)>() << "\n";
+#ifdef DEBUG
+    std::cout << strAdd.size() <<  " - " << "attempting to convert value..."
+              << type_name<typeof(p.second)>() << "\n";
+#endif
     encode_try_all(p.second, strAdd);
   }
 
@@ -51,14 +101,20 @@ void encode_specific(std::map<std::string, boost::any> data,
   encodedStr = encodedStr + (strAdd);
   encodedStr = encodedStr + CHR_TERM;
 
-//  std::cout << "encoded map: " << encodedStr << "\n";
+#ifdef DEBUG
+  std::cout << encodedStr.size() <<  " - " << "<<encoded map...\n";
+#endif
 }
 
 void encode_specific(std::list<boost::any> data, string &encodedStr) {
-  //std::cout << "encoding list...\n";
+#ifdef DEBUG
+  std::cout << encodedStr.size() <<  " - " << ">>encoding list...\n";
+#endif
   string strAdd;
   for (auto a = data.begin(); a != data.end(); ++a) {
-    //std::cout << "List has entry of type: " << a->type().name() << '\n';
+#ifdef DEBUG
+    std::cout << encodedStr.size() <<  " - " << "List has entry of type: " << a->type().name() << '\n';
+#endif
     encode_try_all(*a, strAdd);
   }
   if (data.size() < LIST_FIXED_COUNT) {
@@ -70,11 +126,12 @@ void encode_specific(std::list<boost::any> data, string &encodedStr) {
     encodedStr = encodedStr + strAdd;
     encodedStr = encodedStr + CHR_TERM;
   }
-  //std::cout << "encoded list: " << encodedStr << "\n";
+#ifdef DEBUG
+  std::cout << encodedStr.size() <<  " - " << "<<encoded list...\n";
+#endif
 }
 
-template <typename T>
-bool encode_any(boost::any data, string &encodedStr) {
+template <typename T> bool encode_any(boost::any data, string &encodedStr) {
   if (is_any_a<T>(data)) {
     encode_specific(boost::any_cast<T>(data), encodedStr);
     return true;
@@ -83,16 +140,29 @@ bool encode_any(boost::any data, string &encodedStr) {
 }
 
 bool encode_try_all(boost::any data, string &encodedStr) {
+#ifdef DEBUG
+  std::cerr << "(rencode) DEBUG: parsing: '" <<
+            boost::typeindex::type_index(data.type()).pretty_name() << "'\n";
+#endif
+
   if (encode_any<const char *>(data, encodedStr))
     return true;
-  if (encode_any<const std::string>(data, encodedStr))
+  else if (encode_any<char*>(data, encodedStr))
+    return true;  
+  else if (encode_any<const unsigned char *>(data, encodedStr))
     return true;
-  if (encode_any<std::map<std::string, boost::any>>(data, encodedStr))
+  else if (encode_any<const std::string>(data, encodedStr))
     return true;
-  if (encode_any<std::list<boost::any>>(data, encodedStr))
+  else if (encode_any<std::map<std::string, boost::any>>(data, encodedStr))
     return true;
-  std::cout << "could not convert data of type '" << data.type().name()
-            << "' to anything useful.\n";
+  else if (encode_any<std::list<boost::any>>(data, encodedStr))
+    return true;
+  else if (encode_any<int>(data, encodedStr))
+    return true;
+  else if (encode_any<bool>(data, encodedStr))
+    return true;
+  std::cerr << "(rencode) could not convert data of type '"
+            << data.type().name() << "' to anything useful.\n";
   return false;
 }
 

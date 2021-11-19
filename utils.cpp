@@ -12,6 +12,52 @@
 #include <list>
 #include <boost/any.hpp>
 #include "utils.hpp"
+#include "librencodeplus.hpp"
+#include <fstream>
+#include <iostream>
+
+
+void outputStrInHex(string str){
+    
+    for( unsigned char c : str){
+        printf("%X|%3d (%c)\n",c,c,c);
+    }
+    printf("\n");
+}
+
+
+unsigned char *readBinaryData(std::string filename, int &size) {
+  char *bvar;
+  std::basic_ifstream<char> inF(filename, std::ios::in | std::ios::binary |
+                                              std::ios::ate);
+  if (inF.is_open()) {
+    size = inF.tellg();
+    bvar = new char[size];
+    inF.seekg(0, std::ios::beg);
+    inF.read(bvar, size);
+    inF.close();
+    return reinterpret_cast<unsigned char *>(bvar);
+  } else {
+    std::cerr << "Could not open binary file '" << filename << "'\n";
+    return nullptr;
+  }
+}
+
+
+
+int writeToFile(std::string fileName, string content){
+    std::ofstream fout (fileName, std::ios::out|std::ios::trunc|std::ios::binary);
+    if (fout.is_open()){
+        std::cout << "exporting " << content.size() << " bytes...\n";
+        fout.write(reinterpret_cast<const char*>(content.c_str()),content.size());
+        fout.flush();
+        fout.close();
+        return 0;
+    }else{
+        std::cerr << "Could not open file '" << fileName << "' for writing.";
+        return 1;
+    } 
+}
 
 void outputDataStructure(boost::any any, int level, bool prefix) {
   if (prefix){
