@@ -1,5 +1,4 @@
 #include "../librencodeplus.hpp"
-#include "../utils.hpp"
 #include <boost/any.hpp>
 #include <cstddef>
 #include <fstream>
@@ -8,6 +7,8 @@
 #include <list>
 #include <map>
 #include <string>
+
+int decode_file(std::string filename);
 
 int decode_file(std::string filename) {
   string ostr;

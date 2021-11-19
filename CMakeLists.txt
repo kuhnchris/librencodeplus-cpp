@@ -8,13 +8,12 @@ option(DEBUG_OUTPUT "Build with debug outputs" OFF)
 option(BUILD_TESTS "Build test apps" OFF)
 option(BUILD_TOOLS "Build tools" ON)
 
-
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-add_library(rencodeplus librencodeplus.cpp utils.cpp librencodeplus-decode.cpp)
+add_library(rencodeplus librencodeplus-encode.cpp librencodeplus-utils.cpp librencodeplus-decode.cpp)
 
 set_target_properties(rencodeplus PROPERTIES
                         POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS}
@@ -51,4 +50,3 @@ endif()
 set(installable_libs rencodeplus)
 install(TARGETS ${installable_libs} DESTINATION lib)
 install(FILES librencodeplus.hpp DESTINATION include)
-install(FILES librencodeplus-constants.hpp DESTINATION include)
