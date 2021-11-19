@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+using namespace rencodeplus::decode;
 int decode_file(std::string filename);
 
 int decode_file(std::string filename) {

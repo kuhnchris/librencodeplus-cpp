@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <iostream>
+using namespace rencodeplus::encode;
 
 int main(int argc, char **argv) {
     bool outAsFiles = false;

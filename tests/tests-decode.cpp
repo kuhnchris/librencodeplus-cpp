@@ -8,6 +8,8 @@
 #include <map>
 #include <string>
 
+using namespace rencodeplus::decode;
+
 int test_str();
 int test_map();
 int test_list();
