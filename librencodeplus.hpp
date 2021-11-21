@@ -46,6 +46,7 @@ namespace rencodeplus {
             return true;
         }
 
+        std::string treatNumbersAsString(boost::any m);
         void outputDataStructure(boost::any any, int level, bool prefix = true);
         int writeToFile(std::string fileName, string content);
         void outputStrInHex(string str);

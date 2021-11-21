@@ -28,6 +28,14 @@ namespace rencodeplus {
             printf("\n");
         }
 
+        std::string treatNumbersAsString(boost::any m){
+            if (is_any_a<unsigned int>(m))
+                return std::string(boost::any_cast<unsigned int>(m),1);
+            if (is_any_a<long long>(m))
+                return std::string(boost::any_cast<long long>(m),2);
+            throw boost::bad_any_cast();
+        }
+
         unsigned char *readBinaryData(std::string filename, int &size) {
             char *bvar;
             std::basic_ifstream<char> inF(
@@ -74,7 +82,8 @@ namespace rencodeplus {
                 std::list<boost::any> l =
                     boost::any_cast<std::list<boost::any>>(any);
                 for (auto ll : l) {
-                    rencodeplus::utils::outputDataStructure(ll, level + 2,false);
+                    rencodeplus::utils::outputDataStructure(ll, level + 2,
+                                                            false);
                     std::cout << "\n";
                 }
             } else if (is_any_a<std::string>(any)) {
@@ -98,6 +107,9 @@ namespace rencodeplus {
             } else if (is_any_a<unsigned int>(any)) {
                 std::cout << "(unsigned int) ";
                 std::cout << boost::any_cast<unsigned int>(any);
+            } else if (is_any_a<int>(any)) {
+                std::cout << "(int) ";
+                std::cout << boost::any_cast<int>(any);
             } else if (is_any_a<long long>(any)) {
                 std::cout << "(long long) ";
                 std::cout << boost::any_cast<long long>(any);
